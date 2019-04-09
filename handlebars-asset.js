@@ -1,17 +1,23 @@
-const Handlebars = require('handlebars');
-const JSAsset = require('parcel-bundler/src/assets/JSAsset');
+const { precompile } = require('handlebars');
+const { Asset } = require('parcel-bundler');
 
-class HbsAsset extends JSAsset {
-    async pretransform() {
-        const precompiled = Handlebars.precompile(this.contents);
-        this.contents = `
-                import Handlebars from 'handlebars/dist/handlebars.runtime';
-                const templateFunction = Handlebars.template(${precompiled});
-                export default templateFunction;
-                `;
+class HbsAsset extends Asset {
+  constructor(name, pkg, options) {
+    super(name, pkg, options);
+    this.type = 'js';
+  }
 
-        return await super.pretransform();
-    }
+  async generate() {
+    const precompiled = precompile(this.contents);
+    const code = `import Handlebars from 'handlebars/dist/handlebars.runtime';
+        const templateFunction = Handlebars.template(${precompiled});
+        export default templateFunction;`;
+
+    return [{
+        type: 'js',
+        value: code
+    }];
+  }
 }
 
 module.exports = HbsAsset;
