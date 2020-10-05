@@ -8,10 +8,12 @@ class HbsAsset extends Asset {
   }
 
   async generate() {
-    const precompiled = precompile(this.contents);
+    const { code: precompiled, map } = precompile(this.contents, { srcName: this.relativeName });
     const code = `import Handlebars from 'handlebars/dist/handlebars.runtime';
         const templateFunction = Handlebars.template(${precompiled});
         module.exports = templateFunction;`;
+
+    this.sourceMap = JSON.parse(map);
 
     return [{
         type: 'js',
