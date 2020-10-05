@@ -11,7 +11,7 @@ class HbsAsset extends Asset {
     const precompiled = precompile(this.contents);
     const code = `import Handlebars from 'handlebars/dist/handlebars.runtime';
         const templateFunction = Handlebars.template(${precompiled});
-        export default templateFunction;`;
+        module.exports = templateFunction;`;
 
     return [{
         type: 'js',
