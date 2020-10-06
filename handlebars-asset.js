@@ -20,7 +20,7 @@ class HbsAsset extends Asset {
     const code = `import Handlebars from 'handlebars/dist/handlebars.runtime';
         ${partialsImports}
         const templateFunction = Handlebars.template(${precompiled});
-        module.exports = templateFunction;`;
+        export default templateFunction;`;
 
     return [{
         type: 'js',
