@@ -7,6 +7,7 @@
   "files": [
     "index.js",
     "handlebars-asset.js",
+    "get_partials_paths.js",
     "@types/index.d.ts"
   ],
   "keywords": [
