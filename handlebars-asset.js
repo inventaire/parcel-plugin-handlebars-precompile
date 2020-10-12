@@ -1,6 +1,6 @@
 const { precompile } = require('handlebars');
 const { Asset } = require('parcel-bundler');
-const getPartialsPaths = require('./get_partials_paths');
+const getPartialsData = require('./get_partials_data');
 
 class HbsAsset extends Asset {
   constructor(name, pkg, options) {
@@ -13,12 +13,28 @@ class HbsAsset extends Asset {
 
     // inventaire-client hack: pre-import all {{partials}} to force Parcel to include them in the bundle
     // otherwise we get "Cannot resolve dependency" errors
-    const partialsImports = getPartialsPaths(this.contents)
-      .map(path => `import '${path}';`)
-      .join('\n')
+    const partialsData = getPartialsData(this.contents)
+
+    let partialsImports = ''
+    let registerPartials = ''
+
+    if (partialsData.length > 0) {
+      partialsImports = partialsData
+        .map(({ path, importName }) => `import ${importName} from '${path}';`)
+        .join('\n')
+
+      registerPartials = partialsData
+        // .map({ path } => `window._antiTreeShake['${path}'] = ${slugifyPath(path)};`)
+        .map(({ name, importName }) => {
+          return `Handlebars.registerPartial('${name}', ${importName});`
+        })
+        .join('\n')
+    }
+
 
     const code = `import Handlebars from 'handlebars/dist/handlebars.runtime';
         ${partialsImports}
+        ${registerPartials}
         const templateFunction = Handlebars.template(${precompiled});
         export default templateFunction;`;
 

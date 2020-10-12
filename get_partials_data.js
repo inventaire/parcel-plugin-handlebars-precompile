@@ -1,12 +1,14 @@
-const partialPattern = /\{\{partial ('|")([\w:_]+)('|")/g
+const partialPattern = /\{\{> '([\w:_]+)'/g
+const getImportName = name => `_${name.replace(/:/g, '_')}`
 
 const getPartialsNames = templateText => {
   const partialsMatches = templateText.matchAll(partialPattern)
-  return Array.from(partialsMatches).map(match => match[2])
+  const found = Array.from(partialsMatches).map(match => match[1])
+  return uniq(found)
 }
 
 // Based on https://github.com/inventaire/inventaire-client/blob/master/app/lib/handlebars_helpers/partials.js
-const getPartialPath = name => {
+const addPartialPath = name => {
   const parts = name.split(':')
   let file, module, subfolder
   if (parts.length === 3) {
@@ -21,11 +23,20 @@ const getPartialPath = name => {
     [ module, file ] = [ 'general', name ]
   }
 
+  let path
   if (subfolder != null) {
-    return `modules/${module}/views/${subfolder}/templates/${file}.hbs`
+    path = `modules/${module}/views/${subfolder}/templates/${file}.hbs`
   } else {
-    return `modules/${module}/views/templates/${file}.hbs`
+    path = `modules/${module}/views/templates/${file}.hbs`
+  }
+
+  return {
+    name,
+    path,
+    importName: getImportName(name)
   }
 }
 
-module.exports = contents => getPartialsNames(contents).map(getPartialPath)
+const uniq = array => Array.from(new Set(array))
+
+module.exports = contents => getPartialsNames(contents).map(addPartialPath)
